@@ -1,80 +1,78 @@
 package com.example.lab11_smooties;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.lab11_smooties.model.Drink;
-import com.example.lab11_smooties.R;
 
 import java.util.List;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
-    private List<Drink> values;
+    private List<Drink> drinkList;
     private Context context;
 
-    public MyAdapter(List<Drink> values, Context context) {
-        this.values = values;
+    public MyAdapter(List<Drink> drinks, Context context) {
+        this.drinkList = drinks;
         this.context = context;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-
-        public ImageView imgView;
-        public TextView txtHeader;
-        public TextView txtFooter;
-        public View layout;
-
-        public ViewHolder(View v) {
-            super(v);
-            layout = v;
-            imgView = (ImageView) v.findViewById(R.id.icon);
-            txtHeader = (TextView) v.findViewById(R.id.firstLine);
-            txtFooter = (TextView) v.findViewById(R.id.secondLine);
-        }
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.drink_item, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View v = inflater.inflate(R.layout.row_layout, parent, false);
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
-    }
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Drink drink = drinkList.get(position);
+        holder.drinkName.setText(drink.getDrink_name());
+        holder.drinkPrice.setText("Price: " + drink.getDrink_price() + " THB");
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
-
-        final Drink drink = values.get(position);
-        holder.txtHeader.setText(drink.getDrink_name());
-        holder.txtFooter.setText(drink.getDrink_price() + " บาท");
+        // ใช้ Glide ในการโหลดรูปภาพจาก URL
         Glide.with(context)
                 .load(drink.getDrink_image())
-                .into(holder.imgView);
-        holder.imgView.setOnClickListener(new View.OnClickListener(){
+                .into(holder.drinkImage);
+
+        // เพิ่มการคลิกเพื่อแสดงรายละเอียด
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast toast = Toast.makeText(context,
-                        drink.getDrink_name(),
-                        Toast.LENGTH_SHORT);
-                toast.show();
-
+                Intent intent = new Intent(context, detail.class);
+                intent.putExtra("drink_name", drink.getDrink_name());
+                intent.putExtra("drink_image", drink.getDrink_image());
+                intent.putExtra("drink_price", drink.getDrink_price());
+                context.startActivity(intent);
             }
         });
-
     }
 
     @Override
     public int getItemCount() {
-        return values.size();
+        return drinkList.size();
     }
 
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        public TextView drinkName;
+        public ImageView drinkImage;
+        public TextView drinkPrice;
+
+        public ViewHolder(View view) {
+            super(view);
+            drinkName = view.findViewById(R.id.drink_name);
+            drinkImage = view.findViewById(R.id.drink_image);
+            drinkPrice = view.findViewById(R.id.drink_price);
+        }
+    }
 }
